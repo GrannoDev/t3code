@@ -1475,15 +1475,19 @@ function startAnnotation(sendEnabled: boolean): void {
   const syncOverlay = (): void => {
     // A modal makes the rest of the document inert. Keep the top-layer overlay
     // inside it so the editor stays interactive, including when dialogs change.
-    const modal = document.elementFromPoint(0, 0)?.closest("dialog:modal");
+    // Focus still identifies the modal when its backdrop ignores pointer events.
+    const modal =
+      document.activeElement?.closest("dialog:modal") ??
+      document.elementFromPoint(0, 0)?.closest("dialog:modal");
     const parent = modal ?? document.documentElement;
-    if (host.parentElement === parent) return;
+    if (host.parentElement === parent && host.matches(":popover-open")) return;
     parent.appendChild(host);
     host.showPopover();
   };
   const modalObserver = new MutationObserver((records) => {
     if (
-      !host.isConnected ||
+      // Removing and reinserting a dialog in one task also hides its popovers.
+      !host.matches(":popover-open") ||
       records.some(
         (record) => record.type === "attributes" && record.target instanceof HTMLDialogElement,
       )
