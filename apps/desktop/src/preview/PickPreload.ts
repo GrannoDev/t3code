@@ -1461,6 +1461,20 @@ function startAnnotation(sendEnabled: boolean): void {
     submitAnnotation(submission);
   });
 
+  // Dialog backdrop-dismiss handlers must not receive annotation control clicks.
+  for (const type of [
+    "pointerdown",
+    "pointerup",
+    "mousedown",
+    "mouseup",
+    "click",
+    "dblclick",
+    "auxclick",
+    "contextmenu",
+  ]) {
+    root.addEventListener(type, (event) => event.stopPropagation());
+  }
+
   window.addEventListener("pointermove", onPointerMove, { capture: true, passive: false });
   window.addEventListener("pointerdown", onPointerDown, { capture: true, passive: false });
   window.addEventListener("pointerup", onPointerUp, { capture: true, passive: false });
